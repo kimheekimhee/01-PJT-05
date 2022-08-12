@@ -22,7 +22,7 @@ def dfs(row,col,path,construct):
             visited[nrow][ncol] = 0 # 갔다오면 초기화
         elif mountain[row][col]<=mountain[nrow][ncol] and construct ==False: # 이동불가능하면
             for i in range(1,K+1):
-                mountain[nrow][ncol]-=1 # 공사해보기
+                mountain[nrow][ncol]-=i # 공사해보기
                 construct = True
                 if mountain[row][col]>mountain[nrow][ncol]:
                     visited[nrow][ncol] =1
