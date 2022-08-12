@@ -1,75 +1,9 @@
 import sys
-from collections import deque
-from pprint import pprint
-
-def dfs(x, y, n, land, visited, length):
-    visited[x][y] = True
-    length[x][y] = 1
-    dx = [-1, 1, 0, 0]
-    dy = [0, 0, -1, 1]
-    stack = [[x, y]]
-    while stack:
-        trial = 1
-        v = stack.pop()
-        vx = v[0]
-        vy = v[1]
-        print(v)
-        construction = []
-        construction_position = 0
-            
-        # 공사 취소
-        if v == construction:
-            trial = 1
-            land[vx][vy] = construction_position
-            
-        stack_length_1 = len(stack)
-        for d in range(4):
-            nx = vx + dx[d]
-            ny = vy + dy[d]
-            # 새 좌표가 범위 내에 있고 고도차가 있으며
-            if 0 <= nx < n and 0 <= ny < n and land[nx][ny] < land[vx][vy]:
-                # 개척이 되지 않았다
-                if visited[nx][ny] == False:
-                    length[nx][ny] = length[vx][vy] + 1
-                    stack.append([nx, ny])
-                # 개척이 되긴 되었는데 바로 전에 방문한 좌표가 아니며 더 긴 루트를 개척할 수 있다
-                elif visited[nx][ny] == True and length[nx][ny] != length[vx][vy] + 1 and length[vx][vy] + 1 > length[nx][ny]:
-                    length[nx][ny] = length[vx][vy] + 1
-                    stack.append([nx, ny])
-            # 새 좌표가 범위 내에 있으나 더 높은 곳이며
-            if 0 <= nx < n and 0 <= ny < n and land[nx][ny] >= land[vx][vy]:
-                # 공사 가능하며 공사로 이전 위치보다 낮출 수 있다
-                if trial == 1 and land[nx][ny] - k < land[vx][vy]:
-                    # 원래 높이 정보를 저장하고
-                    construction = [nx, ny]
-                    construction_position = land[nx][ny]
-                    # 공사한다
-                    land[nx][ny] = land[vx][vy] - 1
-                    length[nx][ny] = length[vx][vy] + 1
-                    visited[nx][ny] = True
-                    stack.append([nx, ny])
-        stack_length_2 = len(stack)
-        # 스택에 채워진 것이 아무것도 없다 : 탐색이 끝났다
-        if stack_length_1 == stack_length_2:
-            condition = True
-        else:
-            condition = False
-        if condition == True:
-            visited[stack[-1][0]][stack[-1][1]] = False
-            
-            
-            
-    max_length = 0
-    for a in range(n):
-        for b in range(n):
-            if length[a][b] > max_length:
-                max_length = length[a][b]
-    return max_length    
-
 sys.stdin = open("_등산로조성.txt")
 # 가장 높은 봉우리에서 시작
 # 높은 곳에서 낮은 곳으로, 상하좌우만 연결
 # 딱 한 곳을 최대 k만큼 높이를 줄일 수 있음, 높이가 1보다 작아지는 것도 가능
+
 t = int(input())
 for i in range(1, t + 1):
     n, k = map(int, input().split())
@@ -81,22 +15,68 @@ for i in range(1, t + 1):
             if land[a][b] > max_height:
                 max_height = land[a][b]
                 
-    # 가장 높은 곳의 좌표를 찾기
+    # 가장 높은 곳의 좌표를 찾기, 가장 높은 곳의 좌표에서만 탐색할거
     max_height_list = []
     for a in range(n):
         for b in range(n):
             if land[a][b] == max_height:
                 max_height_list.append([a, b])
                 
-    # 등산로 길이의 모든 경우의 수 넣기
-    route_list = []
-    visited = [[False] * n for _ in range(n)]
-    length = [[0] * n for _ in range(n)]
+    # (x, y) 좌표부터 백트래킹 하기
+    def backtracking(x, y, a, b):
+        max_length = 0
+        # 상 하 좌 우
+        dx = [-1, 1, 0, 0]
+        dy = [0, 0, -1, 1]
+        for d in range(4):
+            nx = x + dx[d]
+            ny = y + dy[d]
+            # 좌표가 땅 안에 존재한다
+            if 0 <= nx < n and 0 <= ny < n:
+                # 루트 안에 있는 방문했던 좌표는 안된다
+                for i in range(len(route)):
+                    if route[i][0] == nx and route[i][1] == ny:
+                        break
+                else:
+                    # 내려가는 방향이다
+                    if land[nx][ny] < route[-1][2]:
+                        route.append([nx, ny, land[nx][ny], 0])
+                        # 조건에 맞은 루트가 일단 완성되었으므로 루트 길이 정보에 저장
+                        route_list.append(len(route))
+                        # 백트래킹
+                        backtracking(nx, ny, land[nx][ny], 0)
+                        route.pop()
+                    # 올라가거나 고도가 같은 방향이나 공사로 극복 가능하다
+                    if land[nx][ny] >= route[-1][2] and land[nx][ny] - k < route[-1][2]:
+                        construction = 0
+                        for i in range(len(route)):
+                            construction += route[i][3]
+                        # 공사 경험이 없다
+                        if construction == 0:
+                            route.append([nx, ny, route[-1][2] - 1, 1])
+                            # 조건에 맞은 루트가 일단 완성되었으므로 루트 길이 정보에 저장
+                            route_list.append(len(route))
+                            # 백트래킹
+                            backtracking(nx, ny, route[-1][2] - 1, 1) 
+                            route.pop()  
+            # 다음 좌표가 될 수 없다
+            else:
+                continue
+        
+        return max(route_list)
+        
     
-    
+    max_length_list = []
     for start in max_height_list:
-        route_list.append(dfs(start[0], start[1], n, land, visited, length))
-    print(route_list)
+        x = start[0]
+        y = start[1]
+        route_list = []
+        route = [[x, y, land[x][y], 0]]
+        max_length = backtracking(x, y, land[x][y], 0)
+        max_length_list.append(max_length)
+        
+    print('#{}'.format(i), max(max_length_list))
+    
     
             
 
