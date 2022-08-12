@@ -1,3 +1,10 @@
-import sys
 
-sys.stdin = open("_모음이보이지않는사람.txt")
+tc = int(input())
+for i in range(tc):
+    str = input()
+    str = str.replace('a','')
+    str = str.replace('e','')
+    str = str.replace('i','')
+    str = str.replace('o','')
+    str = str.replace('u','')
+    print(f'#{i+1} {str}')
