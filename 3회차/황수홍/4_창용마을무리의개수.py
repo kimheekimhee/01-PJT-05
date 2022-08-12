@@ -6,5 +6,3 @@ T = int(input())
 
 for tc in T:
     a, b = map(int,input().split())
-    for i in b:
-        
