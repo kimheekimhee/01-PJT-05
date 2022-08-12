@@ -1,4 +1,5 @@
 # SWEA 4406. 모음이 보이지 않는 사람
+# 풀이법: 영어 모음을 공백으로 replace
 
 import sys
 
