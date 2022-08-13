@@ -51,7 +51,7 @@ for tt in range(1, t + 1):
                 for d in range(n):
                     for e in range(n):
                         if maps[d][e] == max_height:
-                            len_list.append(dfs(d, e, n, maps))
+                            len_list.append(bfs(d, e, n, maps))
 
                 maps[a][b] += c
 
