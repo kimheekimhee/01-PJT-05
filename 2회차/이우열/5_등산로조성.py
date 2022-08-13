@@ -4,7 +4,7 @@ import sys
 sys.stdin = open("_등산로조성.txt")
 
 
-def dfs(i, j, n, maps):
+def bfs(i, j, n, maps):
     queue = deque()
     visited = [[1] * (n) for _ in range(n)]
     graph = maps
